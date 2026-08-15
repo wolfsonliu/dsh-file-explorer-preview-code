@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ComponentType } from 're
 import { basicSetup, EditorView } from 'codemirror'
 import { Compartment } from '@codemirror/state'
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language'
-import { oneDarkHighlightStyle } from '@codemirror/theme-one-dark'
+import { oneDark, oneDarkHighlightStyle } from '@codemirror/theme-one-dark'
 import type { PreviewProps, Translate } from '@dsh-external/dsh-file-explorer/client'
 import { languageDescriptionFor } from './languages.ts'
 
@@ -11,11 +11,15 @@ type WriteFile = (path: string, content: string) => Promise<void>
 
 const AUTOSAVE_DELAY_MS = 500
 
-/** Pick the highlight theme following DSH's dark-theme attribute. */
-function currentHighlightExtension() {
-  return syntaxHighlighting(
-    document.body.hasAttribute('data-ds-dark-theme') ? oneDarkHighlightStyle : defaultHighlightStyle,
-  )
+/**
+ * Pick the full theme (editor chrome + syntax tokens) following DSH's
+ * dark-theme attribute. The full `oneDark` base theme darkens the gutter and
+ * line numbers, not just the syntax tokens.
+ */
+function currentThemeExtension() {
+  return document.body.hasAttribute('data-ds-dark-theme')
+    ? [oneDark, syntaxHighlighting(oneDarkHighlightStyle)]
+    : [syntaxHighlighting(defaultHighlightStyle)]
 }
 
 /**
@@ -84,7 +88,7 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
           basicSetup,
           EditorView.lineWrapping,
           langCompartmentRef.current.of([]),
-          themeCompartmentRef.current.of(currentHighlightExtension()),
+          themeCompartmentRef.current.of(currentThemeExtension()),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               setSaveState('dirty')
@@ -115,7 +119,7 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
       // Follow DSH's dark/light toggle live.
       const observer = new MutationObserver(() => {
         if (disposedRef.current || viewRef.current !== view) return
-        view.dispatch({ effects: themeCompartmentRef.current.reconfigure(currentHighlightExtension()) })
+        view.dispatch({ effects: themeCompartmentRef.current.reconfigure(currentThemeExtension()) })
       })
       observer.observe(document.body, { attributes: true, attributeFilter: ['data-ds-dark-theme'] })
 
