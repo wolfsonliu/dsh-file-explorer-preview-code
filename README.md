@@ -96,6 +96,8 @@ npm test          # vitest unit tests
 npm run build     # tsc + tsdown (host ESM stub + client CJS bundle)
 ```
 
+> After `npm run build`, hard-refresh the browser (`Ctrl/Cmd+Shift+R`): `dsh web` may keep serving a cached plugin bundle, so a soft reload can leave your latest build unused.
+
 ## License
 
 [MIT](LICENSE)

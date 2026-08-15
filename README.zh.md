@@ -96,6 +96,8 @@ npm test          # vitest 单元测试
 npm run build     # tsc + tsdown（宿主 ESM 占位 + 客户端 CJS bundle）
 ```
 
+> `npm run build` 之后请**强制刷新浏览器**（`Ctrl/Cmd+Shift+R`）：`dsh web` 可能仍缓存着旧的插件 bundle，普通刷新可能不会加载你最新的构建。
+
 ## 许可
 
 [MIT](LICENSE)
