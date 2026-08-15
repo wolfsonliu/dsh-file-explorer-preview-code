@@ -24,11 +24,8 @@ DSH Web 的 [CodeMirror 6](https://codemirror.net/) 代码预览与编辑器，�
 本插件**依赖** [`@dsh-external/dsh-file-explorer`](https://github.com/wolfsonliu/dsh-file-explorer)——它注入 `fileExplorer` cordis 服务，由该服务提供 `registerPreview` 与 `writeFile`（保存路径）。请先安装并启用 `dsh-file-explorer`，再安装本插件：
 
 ```sh
-# 在 dsh-file-explorer 仓库中
-npm install && npm run build
-dsh plugin --profile web add .
-
-# 在本仓库中
+git clone https://github.com/wolfsonliu/dsh-file-explorer.git
+cd dsh-file-explorer
 npm install && npm run build
 dsh plugin --profile web add .
 ```
@@ -37,13 +34,12 @@ dsh plugin --profile web add .
 
 ## 安装
 
-从本地目录安装：
+从 git 仓库安装：
 
 ```sh
-git clone <this-repo>
+git clone https://github.com/wolfsonliu/dsh-file-explorer-preview-code.git
 cd dsh-file-explorer-preview-code
-npm install
-npm run build
+npm install && npm run build
 dsh plugin --profile web add .
 dsh web
 ```

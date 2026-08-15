@@ -24,11 +24,8 @@ A [CodeMirror 6](https://codemirror.net/) code preview and editor for DSH Web, b
 This plugin **requires** [`@dsh-external/dsh-file-explorer`](https://github.com/wolfsonliu/dsh-file-explorer) — it injects the `fileExplorer` cordis service, which provides `registerPreview` and `writeFile` (the save path). Install and enable `dsh-file-explorer` before this plugin:
 
 ```sh
-# in the dsh-file-explorer checkout
-npm install && npm run build
-dsh plugin --profile web add .
-
-# in this checkout
+git clone https://github.com/wolfsonliu/dsh-file-explorer.git
+cd dsh-file-explorer
 npm install && npm run build
 dsh plugin --profile web add .
 ```
@@ -37,13 +34,12 @@ dsh plugin --profile web add .
 
 ## Install
 
-From a local checkout:
+From the git repository:
 
 ```sh
-git clone <this-repo>
+git clone https://github.com/wolfsonliu/dsh-file-explorer-preview-code.git
 cd dsh-file-explorer-preview-code
-npm install
-npm run build
+npm install && npm run build
 dsh plugin --profile web add .
 dsh web
 ```
