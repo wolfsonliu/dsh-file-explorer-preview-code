@@ -44,7 +44,7 @@
     "codemirror": "^6.0.2"
   },
   "devDependencies": {
-    "@dsh-external/dsh-file-explorer": "file:../dsh_lui",
+    "@dsh-external/dsh-file-explorer": "github:wolfsonliu/dsh-file-explorer",
     "@types/node": "^22.0.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",

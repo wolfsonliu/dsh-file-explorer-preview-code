@@ -30,7 +30,7 @@ npm install && npm run build
 dsh plugin --profile web add .
 ```
 
-> For local development, this repo's `devDependencies` references `@dsh-external/dsh-file-explorer` with a local `file:` path (pointing at your own checkout) so `tsc` resolves the `./client` type definitions. Point that dependency at your checkout of [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer), or your registry's published package, before `npm install`.
+> `@dsh-external/dsh-file-explorer` is installed from git (`github:wolfsonliu/dsh-file-explorer`) so `tsc` resolves its `./client` type definitions. To develop against an unpublished local checkout instead, point that dependency at your own path.
 
 ## Install
 

@@ -30,7 +30,7 @@ npm install && npm run build
 dsh plugin --profile web add .
 ```
 
-> 本地开发时，本仓库的 `devDependencies` 以本地 `file:` 路径引用 `@dsh-external/dsh-file-explorer`（指向你自己的 checkout），以便 `tsc` 解析 `./client` 类型定义。请把该依赖指向你自己的 [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer) checkout（或你 registry 上已发布的包）后再执行 `npm install`。
+> `@dsh-external/dsh-file-explorer` 从 git 仓库安装（`github:wolfsonliu/dsh-file-explorer`），以便 `tsc` 解析其 `./client` 类型定义。若需针对未发布的本地 checkout 联调，可把该依赖改为指向你自己的路径。
 
 ## 安装
 
