@@ -2,7 +2,7 @@
 
 [English](developing-preview-plugins.md) | 中文
 
-本指南说明如何为 [`dsh-file-explorer`](../dsh_lui) 开发一个贡献预览器（或编辑器）的插件，并以**本仓库**（`dsh-file-explorer-preview-code`）作为参考实现。
+本指南说明如何为 [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer) 开发一个贡献预览器（或编辑器）的插件，并以**本仓库**（[dsh-file-explorer-preview-code](https://github.com/wolfsonliu/dsh-file-explorer-preview-code)）作为参考实现。
 
 ## 概览
 

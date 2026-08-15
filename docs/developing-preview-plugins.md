@@ -2,7 +2,7 @@
 
 [中文](developing-preview-plugins.zh.md) | English
 
-This guide shows how to build a plugin that contributes a previewer (or editor) to [`dsh-file-explorer`](../dsh_lui), using **this repository** (`dsh-file-explorer-preview-code`) as the reference implementation.
+This guide shows how to build a plugin that contributes a previewer (or editor) to [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer), using **this repository** ([dsh-file-explorer-preview-code](https://github.com/wolfsonliu/dsh-file-explorer-preview-code)) as the reference implementation.
 
 ## Overview
 

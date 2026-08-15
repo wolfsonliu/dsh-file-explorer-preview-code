@@ -2,7 +2,7 @@
 
 [中文](README.zh.md) | English
 
-A [CodeMirror 6](https://codemirror.net/) code preview and editor for DSH Web, built on `codemirror` (`basicSetup`) + `@codemirror/language-data` (per-language highlighting) + `@codemirror/theme-one-dark` (dark theme). It overrides [`dsh-file-explorer`](../dsh_lui)'s built-in plain-text preview (priority `0`) at priority `10`, giving code files syntax highlighting plus in-place editing with autosave.
+A [CodeMirror 6](https://codemirror.net/) code preview and editor for DSH Web, built on `codemirror` (`basicSetup`) + `@codemirror/language-data` (per-language highlighting) + `@codemirror/theme-one-dark` (dark theme). It overrides [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer)'s built-in plain-text preview (priority `0`) at priority `10`, giving code files syntax highlighting plus in-place editing with autosave.
 
 ## Screenshots
 
@@ -21,7 +21,7 @@ A [CodeMirror 6](https://codemirror.net/) code preview and editor for DSH Web, b
 
 ## Dependencies
 
-This plugin **requires** [`@dsh-external/dsh-file-explorer`](../dsh_lui) — it injects the `fileExplorer` cordis service, which provides `registerPreview` and `writeFile` (the save path). Install and enable `dsh-file-explorer` before this plugin:
+This plugin **requires** [`@dsh-external/dsh-file-explorer`](https://github.com/wolfsonliu/dsh-file-explorer) — it injects the `fileExplorer` cordis service, which provides `registerPreview` and `writeFile` (the save path). Install and enable `dsh-file-explorer` before this plugin:
 
 ```sh
 # in the dsh-file-explorer checkout
@@ -33,7 +33,7 @@ npm install && npm run build
 dsh plugin --profile web add .
 ```
 
-> For local development, this repo's `devDependencies` references the sibling checkout as `"@dsh-external/dsh-file-explorer": "file:../dsh_lui"` so `tsc` resolves the `./client` type definitions. Point that path at your own checkout (or your registry's published package) before `npm install`.
+> For local development, this repo's `devDependencies` references `@dsh-external/dsh-file-explorer` with a local `file:` path (pointing at your own checkout) so `tsc` resolves the `./client` type definitions. Point that dependency at your checkout of [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer), or your registry's published package, before `npm install`.
 
 ## Install
 
@@ -92,6 +92,12 @@ The bundle inserts a single roster row (no host-side configuration):
 ## Developing preview plugins
 
 This repo is the reference implementation for building a preview plugin. See [docs/developing-preview-plugins.md](docs/developing-preview-plugins.md) ([中文](docs/developing-preview-plugins.zh.md)) for the contract, a minimal skeleton, bundling notes, and i18n.
+
+## Related
+
+- [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer) — the core file explorer this plugin extends.
+- [dsh-file-explorer-preview-code](https://github.com/wolfsonliu/dsh-file-explorer-preview-code) — this repository.
+- [dsh-file-explorer-preview-molstar](https://github.com/wolfsonliu/dsh-file-explorer-preview-molstar) — a Mol* structure preview for `.cif`/`.pdb`, built on the same `fileExplorer` contract.
 
 ## Development
 

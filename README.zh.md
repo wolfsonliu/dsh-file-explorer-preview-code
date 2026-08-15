@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-DSH Web 的 [CodeMirror 6](https://codemirror.net/) 代码预览与编辑器，基于 `codemirror`（`basicSetup`）+ `@codemirror/language-data`（按语言高亮）+ `@codemirror/theme-one-dark`（深色主题）构建。它以优先级 `10` 覆盖 [dsh-file-explorer](../dsh_lui) 内置的纯文本预览（优先级 `0`），为代码文件提供按语言区分的高亮，以及支持自动保存的就地编辑。
+DSH Web 的 [CodeMirror 6](https://codemirror.net/) 代码预览与编辑器，基于 `codemirror`（`basicSetup`）+ `@codemirror/language-data`（按语言高亮）+ `@codemirror/theme-one-dark`（深色主题）构建。它以优先级 `10` 覆盖 [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer) 内置的纯文本预览（优先级 `0`），为代码文件提供按语言区分的高亮，以及支持自动保存的就地编辑。
 
 ## 截图
 
@@ -21,7 +21,7 @@ DSH Web 的 [CodeMirror 6](https://codemirror.net/) 代码预览与编辑器，�
 
 ## 依赖
 
-本插件**依赖** [`@dsh-external/dsh-file-explorer`](../dsh_lui)——它注入 `fileExplorer` cordis 服务，由该服务提供 `registerPreview` 与 `writeFile`（保存路径）。请先安装并启用 `dsh-file-explorer`，再安装本插件：
+本插件**依赖** [`@dsh-external/dsh-file-explorer`](https://github.com/wolfsonliu/dsh-file-explorer)——它注入 `fileExplorer` cordis 服务，由该服务提供 `registerPreview` 与 `writeFile`（保存路径）。请先安装并启用 `dsh-file-explorer`，再安装本插件：
 
 ```sh
 # 在 dsh-file-explorer 仓库中
@@ -33,7 +33,7 @@ npm install && npm run build
 dsh plugin --profile web add .
 ```
 
-> 本地开发时，本仓库的 `devDependencies` 以 `"@dsh-external/dsh-file-explorer": "file:../dsh_lui"` 指向同级 checkout，以便 `tsc` 解析 `./client` 类型定义。请把该路径指向你自己的 checkout（或你 registry 上已发布的包）后再执行 `npm install`。
+> 本地开发时，本仓库的 `devDependencies` 以本地 `file:` 路径引用 `@dsh-external/dsh-file-explorer`（指向你自己的 checkout），以便 `tsc` 解析 `./client` 类型定义。请把该依赖指向你自己的 [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer) checkout（或你 registry 上已发布的包）后再执行 `npm install`。
 
 ## 安装
 
@@ -92,6 +92,12 @@ export function apply(ctx) {
 ## 开发预览插件
 
 本仓库即「开发 preview 插件」的参考实现。契约、最小骨架、打包要点与 i18n 见 [docs/developing-preview-plugins.zh.md](docs/developing-preview-plugins.zh.md)（[English](docs/developing-preview-plugins.md)）。
+
+## 相关项目
+
+- [dsh-file-explorer](https://github.com/wolfsonliu/dsh-file-explorer) —— 本插件所扩展的核心文件浏览器。
+- [dsh-file-explorer-preview-code](https://github.com/wolfsonliu/dsh-file-explorer-preview-code) —— 本仓库。
+- [dsh-file-explorer-preview-molstar](https://github.com/wolfsonliu/dsh-file-explorer-preview-molstar) —— 基于同一 `fileExplorer` 契约的 Mol* 结构预览（`.cif`/`.pdb`）。
 
 ## 开发
 
