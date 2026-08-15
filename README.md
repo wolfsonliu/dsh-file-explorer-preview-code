@@ -2,7 +2,13 @@
 
 [中文](README.zh.md) | English
 
-A CodeMirror 6 code preview and editor for DSH Web. It overrides [`dsh-file-explorer`](../dsh_lui)'s built-in plain-text preview (priority `0`) at priority `10`, giving code files per-language syntax highlighting plus in-place editing with autosave.
+A [CodeMirror 6](https://codemirror.net/) code preview and editor for DSH Web, built on `codemirror` (`basicSetup`) + `@codemirror/language-data` (per-language highlighting) + `@codemirror/theme-one-dark` (dark theme). It overrides [`dsh-file-explorer`](../dsh_lui)'s built-in plain-text preview (priority `0`) at priority `10`, giving code files syntax highlighting plus in-place editing with autosave.
+
+## Screenshots
+
+| Dark theme | Light theme |
+| --- | --- |
+| ![Code preview in dark theme](assets/dsh-file-explorer-preview-code_dark.png) | ![Code preview in light theme](assets/dsh-file-explorer-preview-code_light.png) |
 
 ## Features
 

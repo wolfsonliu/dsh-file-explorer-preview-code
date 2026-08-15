@@ -2,7 +2,13 @@
 
 [English](README.md) | 中文
 
-DSH Web 的 CodeMirror 6 代码预览与编辑器。它以优先级 `10` 覆盖 [dsh-file-explorer](../dsh_lui) 内置的纯文本预览（优先级 `0`），为代码文件提供按语言区分的高亮，以及支持自动保存的就地编辑。
+DSH Web 的 [CodeMirror 6](https://codemirror.net/) 代码预览与编辑器，基于 `codemirror`（`basicSetup`）+ `@codemirror/language-data`（按语言高亮）+ `@codemirror/theme-one-dark`（深色主题）构建。它以优先级 `10` 覆盖 [dsh-file-explorer](../dsh_lui) 内置的纯文本预览（优先级 `0`），为代码文件提供按语言区分的高亮，以及支持自动保存的就地编辑。
+
+## 截图
+
+| 深色主题 | 浅色主题 |
+| --- | --- |
+| ![深色主题下的代码预览](assets/dsh-file-explorer-preview-code_dark.png) | ![浅色主题下的代码预览](assets/dsh-file-explorer-preview-code_light.png) |
 
 ## 功能
 
