@@ -1,3 +1,7 @@
 node_modules/
 *.tsbuildinfo
 .npm-cache/
+
+# Local design/plan notes — kept on disk, kept out of git.
+docs/specs/
+docs/plans/
