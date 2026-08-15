@@ -2,6 +2,18 @@
   "name": "@dsh-external/dsh-file-explorer-preview-code",
   "version": "0.1.0",
   "description": "CodeMirror 6 code preview and editor for DSH Web, overriding dsh-file-explorer's plain-text preview with per-language syntax highlighting",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wolfsonliu/dsh-file-explorer-preview-code.git"
+  },
+  "keywords": [
+    "dsh",
+    "codemirror",
+    "code",
+    "preview",
+    "editor",
+    "file-explorer"
+  ],
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
@@ -44,7 +56,7 @@
     "codemirror": "^6.0.2"
   },
   "devDependencies": {
-    "@dsh-external/dsh-file-explorer": "github:wolfsonliu/dsh-file-explorer",
+    "@dsh-external/dsh-file-explorer": "git+https://github.com/wolfsonliu/dsh-file-explorer.git",
     "@types/node": "^22.0.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
