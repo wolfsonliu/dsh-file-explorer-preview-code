@@ -1,6 +1,6 @@
 {
   "name": "@dsh-external/dsh-file-explorer-preview-code",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CodeMirror 6 code preview and editor for DSH Web, overriding dsh-file-explorer's plain-text preview with per-language syntax highlighting",
   "repository": {
     "type": "git",
