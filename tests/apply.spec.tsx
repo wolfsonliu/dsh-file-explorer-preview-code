@@ -8,6 +8,7 @@ interface MockCtx {
     registerPreview: ReturnType<typeof vi.fn>
     registerFileAction: ReturnType<typeof vi.fn>
     writeFile: ReturnType<typeof vi.fn>
+    readRawFile?: ReturnType<typeof vi.fn>
   }
   locale: {
     register: ReturnType<typeof vi.fn>
@@ -16,14 +17,18 @@ interface MockCtx {
   effect: ReturnType<typeof vi.fn>
 }
 
-function makeCtx(): { ctx: MockCtx; cleanup: () => void } {
+function makeCtx(opts?: { readRawFile?: boolean }): { ctx: MockCtx; cleanup: () => void } {
   let cleanup: () => void = () => {}
+  const fe: MockCtx['fileExplorer'] = {
+    registerPreview: vi.fn(() => () => {}),
+    registerFileAction: vi.fn(),
+    writeFile: vi.fn(async () => {}),
+  }
+  if (opts?.readRawFile) {
+    fe.readRawFile = vi.fn(async () => new ArrayBuffer(0))
+  }
   const ctx: MockCtx = {
-    fileExplorer: {
-      registerPreview: vi.fn(() => () => {}),
-      registerFileAction: vi.fn(),
-      writeFile: vi.fn(async () => {}),
-    },
+    fileExplorer: fe,
     locale: {
       register: vi.fn(() => () => {}),
       bind: vi.fn(() => ((key: string) => key)),
@@ -79,5 +84,19 @@ describe('apply', () => {
     cleanup()
     for (const dispose of disposers) expect(dispose).toHaveBeenCalledTimes(1)
     expect(document.querySelector('style[data-code-preview-style]')).toBeNull()
+  })
+
+  test('does not fail when readRawFile is absent (old core)', () => {
+    const { ctx } = makeCtx({ readRawFile: false })
+    expect(() => apply(ctx as never)).not.toThrow()
+    expect(ctx.fileExplorer.registerPreview).toHaveBeenCalledTimes(CODE_EXTS.length)
+  })
+
+  test('probes readRawFile when it is a function (new core)', () => {
+    const { ctx } = makeCtx({ readRawFile: true })
+    expect(() => apply(ctx as never)).not.toThrow()
+    expect(ctx.fileExplorer.registerPreview).toHaveBeenCalledTimes(CODE_EXTS.length)
+    // readRawFile should exist on the context and be a function
+    expect(typeof ctx.fileExplorer.readRawFile).toBe('function')
   })
 })
