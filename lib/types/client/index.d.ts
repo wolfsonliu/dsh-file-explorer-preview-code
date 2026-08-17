@@ -1,6 +1,9 @@
 import type { FileExplorerService, Translate } from '@dsh-external/dsh-file-explorer/client';
+type MyFileExplorer = FileExplorerService & {
+    readRawFile?: (path: string, offset?: number, limit?: number) => Promise<ArrayBuffer>;
+};
 interface ClientContext {
-    fileExplorer: FileExplorerService;
+    fileExplorer: MyFileExplorer;
     locale: {
         register(ns: string, locale: string, dict: Record<string, string>): () => void;
         bind(ns: string): Translate;
