@@ -8,8 +8,10 @@ import { languageDescriptionFor } from './languages.ts'
 
 type SaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'error'
 type WriteFile = (path: string, content: string) => Promise<void>
+type ReadRaw = (path: string, offset?: number, limit?: number) => Promise<ArrayBuffer>
 
 const AUTOSAVE_DELAY_MS = 500
+const TEXT_DECODER = new TextDecoder('utf-8')
 
 /**
  * Pick the full theme (editor chrome + syntax tokens) following DSH's
@@ -24,10 +26,13 @@ function currentThemeExtension() {
 
 /**
  * Create the code preview component, closing over the `writeFile` service
- * method and the plugin's own translator (the PreviewProps `t` is bound to the
- * file-explorer namespace, not ours).
+ * method, `readRaw` for large/binary files, and the plugin's own translator.
  */
-export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentType<PreviewProps> {
+export function makeCodePreview(
+  writeFile: WriteFile,
+  readRaw: ReadRaw | undefined,
+  t: Translate,
+): ComponentType<PreviewProps> {
   return function CodePreview(props: PreviewProps) {
     const { preview, filePath } = props
 
@@ -45,6 +50,8 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
     const [saveState, setSaveState] = useState<SaveState>('clean')
     const [languageName, setLanguageName] = useState<string>(t('plainText'))
     const [cursor, setCursor] = useState({ line: 1, column: 1 })
+    const [loading, setLoading] = useState(false)
+    const [loadError, setLoadError] = useState<string | null>(null)
 
     const saveNow = useCallback(() => {
       const view = viewRef.current
@@ -53,8 +60,6 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
         window.clearTimeout(saveTimerRef.current)
         saveTimerRef.current = undefined
       }
-      // Capture the path/content synchronously so an in-flight save always
-      // targets the file it was triggered for, even across file switches.
       const path = filePathRef.current
       const generation = generationRef.current
       const content = view.state.doc.toString()
@@ -69,17 +74,22 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
         })
     }, [writeFile])
 
-    useEffect(() => {
-      if (preview.kind !== 'text') return
-      const container = containerRef.current
-      if (container === null) return
-      const name = preview.name
-      const content = preview.content
-
+    /**
+     * Create the CodeMirror editor inside `container`, populate it with
+     * `content`, resolve the language from `fileName`, and wire up the
+     * mutation observer + Ctrl/Cmd+S handler. Returns the EditorView.
+     */
+    const setupEditor = useCallback((
+      container: HTMLDivElement,
+      content: string,
+      fileName: string,
+    ): EditorView => {
       disposedRef.current = false
       generationRef.current += 1
       setSaveState('clean')
       setCursor({ line: 1, column: 1 })
+      setLoading(false)
+      setLoadError(null)
 
       const view = new EditorView({
         parent: container,
@@ -105,9 +115,7 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
       })
       viewRef.current = view
 
-      // Resolve the language synchronously (matching), then load its support
-      // asynchronously and reconfigure the language compartment when ready.
-      const description = languageDescriptionFor(name)
+      const description = languageDescriptionFor(fileName)
       setLanguageName(description?.name ?? t('plainText'))
       if (description !== null) {
         void description.load().then((support) => {
@@ -116,7 +124,6 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
         })
       }
 
-      // Follow DSH's dark/light toggle live.
       const observer = new MutationObserver(() => {
         if (disposedRef.current || viewRef.current !== view) return
         view.dispatch({ effects: themeCompartmentRef.current.reconfigure(currentThemeExtension()) })
@@ -131,9 +138,10 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
       }
       container.addEventListener('keydown', handleKeydown)
 
-      return () => {
+      // Store cleanup on the view's DOM element so the useEffect return
+      // can access it.
+      ;(view.dom as HTMLElement & { _cleanup?: () => void })._cleanup = () => {
         disposedRef.current = true
-        // Flush a pending autosave so a fast file switch doesn't lose the last edits.
         if (saveTimerRef.current !== undefined) {
           window.clearTimeout(saveTimerRef.current)
           saveTimerRef.current = undefined
@@ -144,9 +152,54 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
         view.destroy()
         viewRef.current = null
       }
-    }, [filePath, preview, saveNow, t])
 
-    if (preview.kind !== 'text') return null
+      return view
+    }, [saveNow, t, writeFile])
+
+    useEffect(() => {
+      const container = containerRef.current
+      if (container === null) return
+
+      // Cleanup previous editor instance.
+      const prevView = viewRef.current
+      if (prevView !== null) {
+        const cleanup = (prevView.dom as HTMLElement & { _cleanup?: () => void })._cleanup
+        if (cleanup) cleanup()
+      }
+
+      if (preview.kind === 'empty') return
+
+      if (preview.kind === 'text') {
+        setupEditor(container, preview.content, preview.name)
+        return
+      }
+
+      if (preview.kind === 'too-large' || preview.kind === 'binary') {
+        if (!readRaw) {
+          setLoadError('File too large — upgrade dsh-file-explorer to preview this file')
+          return
+        }
+        setLoading(true)
+        setLoadError(null)
+        readRaw(filePath)
+          .then((buffer) => {
+            if (disposedRef.current) return
+            const text = TEXT_DECODER.decode(buffer)
+            if (containerRef.current === null) return
+            setupEditor(containerRef.current, text, preview.name)
+          })
+          .catch((err: unknown) => {
+            if (disposedRef.current) return
+            setLoading(false)
+            setLoadError(err instanceof Error ? err.message : 'Failed to read file')
+          })
+        return
+      }
+
+      // image or unknown kind — nothing to render as text
+    }, [filePath, preview, readRaw, setupEditor])
+
+    if (preview.kind === 'empty') return null
 
     const saveLabel: Record<SaveState, string> = {
       clean: '',
@@ -154,6 +207,28 @@ export function makeCodePreview(writeFile: WriteFile, t: Translate): ComponentTy
       saving: t('saving'),
       saved: t('saved'),
       error: t('saveFailed'),
+    }
+
+    // Loading state while readRaw is in-flight for large/binary files.
+    if (loading) {
+      return (
+        <div className="dsh-cp">
+          <div className="dsh-cp-editor" ref={containerRef} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dsw-alias-label-secondary, #777)', fontSize: '13px' }}>
+            Loading…
+          </div>
+        </div>
+      )
+    }
+
+    // Error state: readRaw failed or unavailable.
+    if (loadError !== null) {
+      return (
+        <div className="dsh-cp">
+          <div className="dsh-cp-editor" ref={containerRef} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dsw-alias-state-error-primary, #d73535)', fontSize: '13px', padding: '16px' }}>
+            {loadError}
+          </div>
+        </div>
+      )
     }
 
     return (
