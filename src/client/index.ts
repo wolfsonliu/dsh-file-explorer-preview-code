@@ -7,8 +7,12 @@ import { EDITOR_CSS } from './styles.ts'
 // ---------------------------------------------------------------------------
 // Client context (the shape of the Cordis context the client plugin receives)
 // ---------------------------------------------------------------------------
+type MyFileExplorer = FileExplorerService & {
+  readRawFile?: (path: string, offset?: number, limit?: number) => Promise<ArrayBuffer>
+}
+
 interface ClientContext {
-  fileExplorer: FileExplorerService
+  fileExplorer: MyFileExplorer
   locale: {
     register(ns: string, locale: string, dict: Record<string, string>): () => void
     bind(ns: string): Translate
@@ -33,10 +37,15 @@ export function apply(ctx: ClientContext): void {
     const t = ctx.locale.bind(CODE_NS)
     const writeFile = ctx.fileExplorer.writeFile
 
+    // Probe readRawFile availability (added in dsh-file-explorer v0.1.0).
+    const readRaw = typeof ctx.fileExplorer.readRawFile === 'function'
+      ? ctx.fileExplorer.readRawFile.bind(ctx.fileExplorer) as (path: string, offset?: number, limit?: number) => Promise<ArrayBuffer>
+      : undefined
+
     // Register one shared editor component for every code extension at
     // priority 10, so it overrides dsh-file-explorer's built-in plain-text
     // preview (priority 0).
-    const component = makeCodePreview(writeFile, t)
+    const component = makeCodePreview(writeFile, readRaw, t)
     const disposers = CODE_EXTS.map(ext =>
       ctx.fileExplorer.registerPreview(ext, component, 10),
     )
