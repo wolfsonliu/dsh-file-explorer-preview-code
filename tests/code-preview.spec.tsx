@@ -21,15 +21,29 @@ function render(element: React.ReactElement): HTMLElement {
 }
 
 describe('CodePreview', () => {
-  test('returns null for a non-text preview without mounting CodeMirror', () => {
-    const CodePreview = makeCodePreview(writeFile, t)
+  test('renders nothing for an empty preview', () => {
+    const CodePreview = makeCodePreview(writeFile, undefined, t)
+    const preview: PreviewProps['preview'] = { kind: 'empty', name: 'empty.txt', size: 0 }
+
+    const container = render(
+      <CodePreview preview={preview} filePath="empty.txt" activeView="preview" t={t} />,
+    )
+
+    expect(container.querySelector('.dsh-cp')).toBeNull()
+    expect(container.textContent).toBe('')
+  })
+
+  test('shows an upgrade prompt for a binary preview when readRaw is unavailable', () => {
+    const CodePreview = makeCodePreview(writeFile, undefined, t)
     const preview: PreviewProps['preview'] = { kind: 'binary', name: 'x.bin', size: 4 }
 
     const container = render(
       <CodePreview preview={preview} filePath="x.bin" activeView="preview" t={t} />,
     )
 
-    expect(container.querySelector('.dsh-cp')).toBeNull()
-    expect(container.textContent).toBe('')
+    // No CodeMirror editor is mounted; the upgrade hint is surfaced instead.
+    expect(container.querySelector('.cm-editor')).toBeNull()
+    expect(container.querySelector('.dsh-cp')).not.toBeNull()
+    expect(container.textContent).toContain('upgrade dsh-file-explorer')
   })
 })
