@@ -35,13 +35,28 @@ describe('CodePreview', () => {
 
   test('shows an upgrade prompt for a binary preview when readRaw is unavailable', () => {
     const CodePreview = makeCodePreview(writeFile, undefined, t)
-    const preview: PreviewProps['preview'] = { kind: 'binary', name: 'x.bin', size: 4 }
+    const preview: PreviewProps['preview'] = { kind: 'binary', name: 'x.bin', size: 4, bytes: '00 00', truncated: false }
 
     const container = render(
       <CodePreview preview={preview} filePath="x.bin" activeView="preview" t={t} />,
     )
 
     // No CodeMirror editor is mounted; the upgrade hint is surfaced instead.
+    expect(container.querySelector('.cm-editor')).toBeNull()
+    expect(container.querySelector('.dsh-cp')).not.toBeNull()
+    expect(container.textContent).toContain('upgrade dsh-file-explorer')
+  })
+
+  test('shows an upgrade prompt for a text-large preview when readRaw is unavailable', () => {
+    const CodePreview = makeCodePreview(writeFile, undefined, t)
+    const preview: PreviewProps['preview'] = { kind: 'text-large', name: 'big.ts', extension: 'ts', size: 3 * 1024 * 1024 }
+
+    const container = render(
+      <CodePreview preview={preview} filePath="big.ts" activeView="preview" t={t} />,
+    )
+
+    // No CodeMirror editor is mounted; the upgrade hint is surfaced instead of
+    // falling through to an empty editor frame.
     expect(container.querySelector('.cm-editor')).toBeNull()
     expect(container.querySelector('.dsh-cp')).not.toBeNull()
     expect(container.textContent).toContain('upgrade dsh-file-explorer')

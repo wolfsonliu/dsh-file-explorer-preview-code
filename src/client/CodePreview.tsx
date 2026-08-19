@@ -174,7 +174,7 @@ export function makeCodePreview(
         return
       }
 
-      if (preview.kind === 'too-large' || preview.kind === 'binary') {
+      if (preview.kind === 'too-large' || preview.kind === 'binary' || preview.kind === 'text-large') {
         if (!readRaw) {
           setLoadError('File too large — upgrade dsh-file-explorer to preview this file')
           return
