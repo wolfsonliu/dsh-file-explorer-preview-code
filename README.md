@@ -65,15 +65,16 @@ export function apply(ctx) {
 
 Registered extensions (`CODE_EXTS`): `ts tsx js jsx json css html py yaml yml toml env sh go rs java c cpp h xml sql graphql cfg ini`.
 
-The editor component handles three preview kinds:
+The editor component handles four preview kinds:
 
 | Kind | Behavior |
 |------|----------|
 | `text` | Uses `preview.content` directly (files ≤ 2 MiB) |
-| `too-large` | Calls `readRawFile(filePath)`, decodes the `ArrayBuffer` as UTF-8, and opens the editor |
-| `binary` | Same as `too-large` — `readRawFile` + decode |
+| `text-large` | Calls `readRawFile(filePath)`, decodes the `ArrayBuffer` as UTF-8, and opens the editor (text files over 2 MiB) |
+| `binary` | Same as `text-large` — `readRawFile` + decode |
+| `too-large` | Same as `text-large` — `readRawFile` + decode (images over their cap; not delivered to this plugin's registered code extensions) |
 
-When `readRawFile` is unavailable (older dsh-file-explorer core), `too-large` and `binary` files show an upgrade prompt. Edits always flow back through `fileExplorer.writeFile(filePath, content)`.
+When `readRawFile` is unavailable (older dsh-file-explorer core), `text-large` and `binary` files show an upgrade prompt. Edits always flow back through `fileExplorer.writeFile(filePath, content)`.
 
 ## Configuration
 
@@ -94,7 +95,7 @@ The bundle inserts a single roster row (no host-side configuration):
 - **Bundle size**: all `@codemirror/*` language packages are inlined into a single `lib/client.js` (~2.7 MB raw, loaded lazily on demand).
 - **No Markdown**: `.md`/`.mdx` stay with dsh-file-explorer's built-in markdown preview.
 - **Write-through**: editing writes directly back to the workspace file; there is no diff/preview-before-save or multi-tab.
-- **Large files**: files above dsh-file-explorer's `maxTextBytes` (2 MiB) are fetched via `readRawFile` and loaded into the editor. Very large files (hundreds of MiB) may cause browser performance issues due to the single-buffer CodeMirror model. `readRawFile` requires dsh-file-explorer v0.1.0+.
+- **Large files**: files above dsh-file-explorer's `maxTextBytes` (2 MiB) arrive as `preview.kind === 'text-large'` and are fetched via `readRawFile` then loaded into the editor. Very large files (hundreds of MiB) may cause browser performance issues due to the single-buffer CodeMirror model. `readRawFile` is part of the stable service contract (added in v0.1.0).
 
 ## Developing preview plugins
 

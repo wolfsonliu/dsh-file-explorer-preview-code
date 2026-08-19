@@ -53,7 +53,10 @@ export const inject = ['fileExplorer', 'locale']
 
 export function apply(ctx) {
   ctx.effect(() => {
-    const component = makeCodePreview(ctx.fileExplorer.writeFile, ctx.locale.bind(CODE_NS))
+    const readRaw = typeof ctx.fileExplorer.readRawFile === 'function'
+      ? ctx.fileExplorer.readRawFile.bind(ctx.fileExplorer)
+      : undefined
+    const component = makeCodePreview(ctx.fileExplorer.writeFile, readRaw, ctx.locale.bind(CODE_NS))
     const disposers = CODE_EXTS.map(ext => ctx.fileExplorer.registerPreview(ext, component, 10))
     return () => { for (const d of disposers) d() }
   })
@@ -62,7 +65,16 @@ export function apply(ctx) {
 
 注册的扩展名（`CODE_EXTS`）：`ts tsx js jsx json css html py yaml yml toml env sh go rs java c cpp h xml sql graphql cfg ini`。
 
-编辑器组件只会收到 `preview.kind === 'text'`（核心会先把 `empty` / `binary` / `too-large` / `image` 路由到自己的预览）。编辑内容通过 `fileExplorer.writeFile(filePath, content)` 写回。
+编辑器组件处理四种预览类型：
+
+| 类型 | 行为 |
+|------|------|
+| `text` | 直接使用 `preview.content`（≤ 2 MiB 的文件） |
+| `text-large` | 调用 `readRawFile(filePath)`，将 `ArrayBuffer` 按 UTF-8 解码后打开编辑器（超过 2 MiB 的文本文件） |
+| `binary` | 与 `text-large` 相同 —— `readRawFile` + 解码 |
+| `too-large` | 与 `text-large` 相同 —— `readRawFile` + 解码（图片超出上限；不会发给本插件注册的代码扩展名） |
+
+当 `readRawFile` 不可用时（较旧的 dsh-file-explorer 核心），`text-large` 与 `binary` 文件会显示升级提示。编辑内容始终通过 `fileExplorer.writeFile(filePath, content)` 写回。
 
 ## 配置
 
@@ -83,7 +95,7 @@ export function apply(ctx) {
 - **体积**：所有 `@codemirror/*` 语言包被内联进单个 `lib/client.js`（约 2.7 MB 原始体积，按需懒加载）。
 - **不支持 Markdown**：`.md`/`.mdx` 仍由 dsh-file-explorer 内置的 markdown 预览处理。
 - **直写**：编辑直接写回工作区文件，无保存前 diff、无多标签页。
-- **大文件**：超过 dsh-file-explorer `maxTextBytes` 的文件会在进入本插件前被核心拒绝。
+- **大文件**：超过 dsh-file-explorer `maxTextBytes`（2 MiB）的文件会以 `preview.kind === 'text-large'` 到达，通过 `readRawFile` 获取并载入编辑器。极大的文件（数百 MiB）可能因 CodeMirror 单缓冲模型导致浏览器性能问题。`readRawFile` 属于稳定服务契约（于 v0.1.0 引入）。
 
 ## 开发预览插件
 

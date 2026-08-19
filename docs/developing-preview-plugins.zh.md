@@ -42,7 +42,7 @@ interface FileExplorerService {
 }
 
 interface PreviewProps {
-  preview: FilePreview      // 判别式联合：text / image / empty / binary / too-large
+  preview: FilePreview      // 判别式联合：text / image / empty / binary / text-large / too-large
   filePath: string          // 工作区相对路径
   t: Translate              // (key, params?) => string
   activeView: 'preview' | 'source'
@@ -57,14 +57,15 @@ type FilePreview =
   | { kind: 'text'; name: string; extension: string; content: string; size: number }
   | { kind: 'image'; name: string; mime: string; dataUrl: string; size: number }
   | { kind: 'empty'; name: string; size: 0 }
-  | { kind: 'binary'; name: string; size: number }
+  | { kind: 'binary'; name: string; size: number; bytes: string; truncated: boolean }
+  | { kind: 'text-large'; name: string; extension: string; size: number }
   | { kind: 'too-large'; name: string; size: number }
 ```
 
 关于路由的两点须知：
 
 1. **`registerPreview` 以小写扩展名为键**（不含前导点）。`resolvePreview` 对未注册扩展名回退到 `binary` 预览器。
-2. **核心会先把非文本 kind 路由走，再轮到你。** `resolvePreviewFor(preview, ext)` 在 `preview.kind !== 'text'` 时直接返回 image/status 预览，因此面向文本的预览器只会收到 `preview.kind === 'text'`。（防御式组件仍会对其他 kind 返回 `null`。）
+2. **`resolvePreviewFor(preview, ext, readRawFile?)` 会先按 kind 路由，但并非总是路由到别处。** `image` 与 `empty` 始终解析到核心内置预览器。`text-large`、`binary` 与 `too-large` 在存在扩展名注册组件时解析到该组件（对 `text-large`，未注册扩展名会回退到核心内置的分页文本读取器）。因此，为文本扩展名注册的面向文本预览器会收到 `text`、`text-large`，有时还会收到 `binary`；请添加 `text-large` 分支（或回退到你的未处理路径）。可选第三参数 `readRawFile` 用于分页读取大文本；若你调用此助手，请传入你的读取器。
 
 ## 最小骨架
 

@@ -42,7 +42,7 @@ interface FileExplorerService {
 }
 
 interface PreviewProps {
-  preview: FilePreview      // discriminated union: text / image / empty / binary / too-large
+  preview: FilePreview      // discriminated union: text / image / empty / binary / text-large / too-large
   filePath: string          // workspace-relative path
   t: Translate              // (key, params?) => string
   activeView: 'preview' | 'source'
@@ -57,14 +57,15 @@ type FilePreview =
   | { kind: 'text'; name: string; extension: string; content: string; size: number }
   | { kind: 'image'; name: string; mime: string; dataUrl: string; size: number }
   | { kind: 'empty'; name: string; size: 0 }
-  | { kind: 'binary'; name: string; size: number }
+  | { kind: 'binary'; name: string; size: number; bytes: string; truncated: boolean }
+  | { kind: 'text-large'; name: string; extension: string; size: number }
   | { kind: 'too-large'; name: string; size: number }
 ```
 
 Two things to know about routing:
 
 1. **`registerPreview` keys by lowercase extension** (no leading dot). `resolvePreview` falls back to the `binary` previewer for unregistered extensions.
-2. **The core routes non-text kinds before consulting your component.** `resolvePreviewFor(preview, ext)` returns the image/status preview directly when `preview.kind !== 'text'`, so a text-oriented previewer only ever receives `preview.kind === 'text'`. (Defensive components still return `null` for other kinds.)
+2. **`resolvePreviewFor(preview, ext, readRawFile?)` routes kinds before consulting your component, but not always away from it.** `image` and `empty` always resolve to core's built-in previewers. `text-large`, `binary`, and `too-large` resolve to the extension-registered component when one exists — for `text-large`, an unregistered extension falls back to core's built-in paged text reader. So a text-oriented previewer registered for a text extension receives `text`, `text-large`, and possibly `binary`; add a `text-large` case (or fall through to your unhandled path). The optional third `readRawFile` argument pages large-text reads; pass your reader if you call this helper.
 
 ## Minimal skeleton
 
